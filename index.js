@@ -15,16 +15,26 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run (){
     try{
         const postCollection = client.db('e-postal').collection('postcollection');
+        const commentsCollection = client.db('e-postal').collection('commentsCollection');
+        const aboutCollection = client.db('e-postal').collection('aboutCollection');
+
         app.post('/posts', async (req, res) => {
             const post = req.body;
             const result = await postCollection.insertOne(post)
             console.log(result);
             res.send(result)
-        })
+        });
 
         app.get('/posts', async(req, res) => {
             const query = {};
             const result = await postCollection.find(query).toArray();
+            res.send(result)
+        })
+
+        app.get('/posts/:id', async(req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id)};
+            const result = await postCollection.findOne(query);
             res.send(result)
         })
 
@@ -49,7 +59,33 @@ async function run (){
                 const result = await postCollection.updateOne(filter, updatedDoc, options)
                 res.send(result)
 
+        });
+
+        app.post('/comments', async(req, res) => {
+            const comment = req.body;
+            const result = await commentsCollection.insertOne(comment);
+            res.send(result)
         })
+
+        app.get('/comments', async(req, res) => {
+            const query = {};
+            const result = await commentsCollection.find(query).toArray();
+            res.send(result)
+        })
+
+        app.post('/about', async(req, res) => {
+            const aboutBody = req.body;
+            const result = await aboutCollection.insertOne(aboutBody)
+            res.send(result)
+        })
+
+        app.get('/about/:email', async(req, res) => {
+            const email = req.params.email;
+            const query = {user_email: email};
+            const result = await aboutCollection.findOne(query);
+            res.send(result)
+        })
+
     }
 
     finally{}
