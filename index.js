@@ -1,5 +1,5 @@
 const express = require('express')
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
 require('dotenv').config()
 const app = express()
@@ -26,6 +26,29 @@ async function run (){
             const query = {};
             const result = await postCollection.find(query).toArray();
             res.send(result)
+        })
+
+        app.put('/postlike/:todo', async(req, res) => {
+            const todo = req.params.todo;
+            
+            const id = req.query.id;
+            const filter = {_id: ObjectId(id)};
+            const options = {upsert: true};
+
+            //for find the current like with exact id
+            const findme = await postCollection.findOne(filter);
+            const oldLike = parseInt(findme.likecount)
+            //end
+
+                console.log('plus hobe')
+                const updatedDoc = {
+                    $set: {
+                        "likecount": oldLike + 1
+                    }
+                }
+                const result = await postCollection.updateOne(filter, updatedDoc, options)
+                res.send(result)
+
         })
     }
 
